@@ -36,7 +36,7 @@ public class TasksController : ControllerBase
             var createdTask = await _taskAppService.CreateTaskAsync(request, cancellationToken);
             return CreatedAtAction(nameof(GetById), new { id = createdTask.Id }, createdTask);
         }
-        catch (DomainException ex)
+        catch (Exception ex) when (ex is DomainException or NotSupportedException)
         {
             return BadRequest(new { erro = ex.Message });
         }

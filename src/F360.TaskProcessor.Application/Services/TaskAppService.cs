@@ -14,15 +14,18 @@ public class TaskAppService : ITaskAppService
 {
     private readonly ITaskRepository _taskRepository;
     private readonly IMessageQueuePublisher _queuePublisher;
+    private readonly ITaskStrategyFactory _strategyFactory;
     private readonly ILogger<TaskAppService> _logger;
 
     public TaskAppService(
         ITaskRepository taskRepository,
         IMessageQueuePublisher queuePublisher,
+        ITaskStrategyFactory strategyFactory,
         ILogger<TaskAppService> logger)
     {
         _taskRepository = taskRepository;
         _queuePublisher = queuePublisher;
+        _strategyFactory = strategyFactory;
         _logger = logger;
     }
 
@@ -34,6 +37,8 @@ public class TaskAppService : ITaskAppService
             type: request.Tipo,
             dataJson: rawJson,
             maxAttempts: request.MaxTentativas);
+
+        _strategyFactory.GetStrategy(jobTask.Type);
 
         // 1. Persiste a tarefa no MongoDB com status "Pendente" (Requisito 1.c e 3.a)
         await _taskRepository.CreateAsync(jobTask, cancellationToken);
